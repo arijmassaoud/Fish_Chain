@@ -1,0 +1,26 @@
+{    
+    "compilerOptions": {
+    "types": ["node", "bcryptjs"],
+    "target": "ES2020",
+
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "lib": ["es2020", "dom"] // 'dom' is often needed implicitly by Express or other libs, so good to have
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/types/**/*.d.ts" // Make sure this line is present
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

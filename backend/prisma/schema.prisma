@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  VET
+  ADMIN
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+enum ProductStatus {
+  PENDING
+  AVAILABLE
+  REJECTED
+  SOLD
+}
+enum CertificateStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  googleId      String?  
+  profilePicture String?
+  isOnline  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products  Product[] @relation("SellerProducts")
+  reservations Reservation[] @relation("BuyerReservations")
+  messagesSent Message[] @relation("SenderMessages")
+  messagesReceived Message[] @relation("ReceiverMessages")
+  certificates Certificate[] @relation("VetCertificates")
+  notifications Notification[]
+  Reservations  Reservation[]
+  resetPasswordToken    String?    
+  resetPasswordTokenExpiry DateTime?
+  Sessions Session[]
+  comments Comment[] @relation("UserComments")
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  description String?
+  imageUrl  String?
+  products  Product[]
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  image       String?
+  isPublic    Boolean  @default(false)
+  imageUrl    String?
+  status      ProductStatus @default(PENDING)
+  quantity    Float
+  available   Boolean  @default(true)
+  categoryId  String   @db.ObjectId
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sellerId    String   @db.ObjectId
+  seller      User     @relation("SellerProducts", fields: [sellerId], references: [id])
+  reservations Reservation[]
+  certificates Certificate[]
+  comments Comment[] 
+  rejectionReason String? 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Reservation {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  buyerId    String   @db.ObjectId
+  buyer      User     @relation("BuyerReservations", fields: [buyerId], references: [id])
+  quantity   Float
+  status     ReservationStatus @default(PENDING)
+  totalAmount Float
+  createdAt  DateTime @default(now())
+   userId     String   @db.ObjectId
+   user       User     @relation(fields: [userId], references: [id])
+  updatedAt  DateTime @updatedAt
+}
+
+model Message {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  sender     User     @relation("SenderMessages", fields: [senderId], references: [id])
+  receiverId String   @db.ObjectId
+  receiver   User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+  read Boolean @default(false)
+  fileUrl     String?
+  fileType    String?
+  reactions   Json?
+}
+model Comment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author    User     @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  // --- THIS IS THE FIX ---
+  // A self-relation must use NoAction for onDelete and onUpdate.
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId  String?
+  replies   Comment[] @relation("CommentReplies")
+
+  // Store reactions as a JSON object
+  reactions Json?
+}
+
+
+model Certificate {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  vetId      String   @db.ObjectId
+  veterinarian        User     @relation("VetCertificates", fields: [vetId], references: [id])
+  status     CertificateStatus @default(PENDING)
+  type        String?
+  description String?
+  fileUrl    String?
+  validUntil DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  message    String
+  type       String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  relatedId  String? 
+}
+model Session {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+}

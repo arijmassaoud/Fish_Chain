@@ -1,0 +1,21 @@
+{
+  "name": "fish",
+  "version": "1.0.0",
+  "description": "- **Authentication**: User registration, login, and role-based access control.\r - **Product Management**: CRUD operations for products, including image uploads.\r - **Category Management**: CRUD operations for product categories.\r - **User Management**: Admin interface for managing users and roles.\r - **Order & Reservation System**: (In progress) Manage orders and reservations.\r - **Communication System**: (In progress) Real-time messaging and notifications.\r - **Veterinary Features**: (In progress) Certificate and health inspection management.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arijmassaoud/Fish-Chain-Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/arijmassaoud/Fish-Chain-Project/issues"
+  },
+  "homepage": "https://github.com/arijmassaoud/Fish-Chain-Project#readme"
+}
